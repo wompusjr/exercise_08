@@ -6,26 +6,41 @@ editor: visual
 
 ## Step One
 
-``` R
+For the first step, I loaded in the necessary packages and data before running the `skim()` function to get the basic information on the quantitative variables.
+
+|                     | Mean | SD    | Min  | Q1   | Median | Q3    | Max    |
+|---------------------|------|-------|------|------|--------|-------|--------|
+| Social Learning     | 2.3  | 16.5  | 0    | 0    | 0      | 0     | 214    |
+| Research_effort     | 38.8 | 16.5  | 1    | 6    | 16     | 37.8  | 755    |
+| ECV                 | 68.5 | 82.8  | 1.63 | 11.8 | 58.6   | 86.2  | 491    |
+| Group_size          | 13.3 | 15.2  | 1    | 3.12 | 7.5    | 18.2  | 91.2   |
+| Gestation           | 165  | 38    | 60   | 138  | 166    | 183   | 275    |
+| Weaning             | 311  | 253   | 40   | 122  | 234    | 389   | 1261   |
+| Longevity           | 332  | 166   | 103  | 216  | 301    | 393   | 1470   |
+| Sex_maturity        | 1480 | 999   | 283  | 702  | 1427   | 1894  | 5583   |
+| Body_mass           | 6795 | 14230 | 31.2 | 739  | 3554   | 7465  | 130000 |
+| Maternal_investment | 479  | 292   | 100  | 256  | 401    | 592   | 1492   |
+| Repro_lifespan      | 9065 | 4602  | 2512 | 6126 | 8326   | 10717 | 39130  |
+
+``` R 
 library(tidyverse)
 library(skimr)
 #step one
 d <- read_csv("https://raw.githubusercontent.com/difiore/ada-datasets/main/Street_et_al_2017.csv", col_names = TRUE)
 skim(d)
-##Social Learning - mean (2.3) sd (16.5) min(0) QT1 (0) Median (0) QT3 (0) max(214)
-##Research_effort - mean (38.8) sd (16.5) min(1) QT1 (6) Median (16) QT3 (37.8) max(755)
-##ECV - mean (68.5) sd (82.8) min(1.63) QT1 (11.8) Median (58.6) QT3 (86.2) max(491)
-##Group_size - mean (13.3) sd (15.2) min(1) QT1 (3.12) Median (7.5) QT3 (18.2) max(91.2)
-##Gestation - mean (165) sd (38) min(60) QT1 (138) Median (166) QT3 (183) max(275)
-##Weaning- mean (311) sd (253) min(40) QT1 (122) Median (234) QT3 (389) max(1261)
-##Longevity - mean (332) sd (166) min(103) QT1 (216) Median (301) QT3 (393) max(1470)
-##Sex_maturity - mean (1480) sd (999) min(283) QT1 (702) Median (1427) QT3 (1894) max(5583)
-##Body_mass - mean (6795) sd (14230) min(31.2) QT1 (739) Median (3554) QT3 (7465) max(130000)
-##Maternal_investment - mean (479) sd (292) min(100) QT1 (256) Median (401) QT3 (592) max(1492)
-##Repro_lifespan - mean (9065) sd (4602) min(2512) QT1 (6126) Median (8326) QT3 (10717) max(39130)
 ```
 
 ## Step Two
+
+From this dataset, I used the built in `plot()` function to create scatterplots of ECV as a function of Group size, Longevity, Weaning, and Reproductive lifespan. Then I used the `par()` function to generate all four plots into a single image
+
+<div>
+
+![](exercise8.2.png){width="472"}
+
+</div>
+
+It's a little squished :/
 
 ``` R
 par(mfrow = c(2, 2))
@@ -38,6 +53,12 @@ par(mfrow = c(2, 2))
 
 ## Step Three
 
+Getting the ordinary-least-squares coefficients for the slop of `ECV~Group_size` required me to first `na.omit()` the original dataset into the new NA-less dataset. From their I could produce the covariance by running the `cov()` function on `d2$ECV` and `d2$Group_size`. Then I could use the covariance to calculate the B1 coefficient or slope by running `cor()` for the variables and multiplying it by the standard deviation of the y variable divided by the standard deviation of the x variable. I proceeded to use that to calculate the B0 coefficient or intercept by taking the mean of the y variable and subtracting it by the B1 coefficient times the mean of the x variable. This produced the following results;
+
+-   **B One -** 2.874
+
+-   **B Zero** - 32.495
+
 ``` R
 d2 <- na.omit(d)
 cov <- cov(d2$ECV, d2$Group_size)
@@ -47,12 +68,20 @@ cov <- cov(d2$ECV, d2$Group_size)
 
 ## Step Four
 
+Checking my handmade results with the `lm()` function, I find the same exact results, proving my calculations were accurate.
+
+-   **B One -** 2.874
+
+-   **B Zero** - 32.495
+
 ``` R
 m1 <- lm(formula = ECV~Group_size, data = d2)
 m1 #same results
 ```
 
 ## Step Five
+
+To address this step, I first had to separate the original dataset into 3 smaller datasets for each group. I then ran `na.omit()`on the new datasets to prevent interference with my handmade calculations.
 
 ``` R
 cat <- d |>
@@ -66,7 +95,13 @@ streps <- d |>
   na.omit(d)
 ```
 
-## 
+### Catarrhines
+
+-   **B One -** 1.399
+
+-   **B Zero** - 105.411
+
+    ![](exercise 8.51.png)
 
 ``` R
 ##catarrhines
@@ -83,7 +118,11 @@ covcat <- cov(cat$ECV, cat$Group_size)
 (mcat <- lm(formula = ECV~Group_size, data = cat)) #double checking results
 ```
 
-## 
+### Platyrrhines
+
+-   **B One -** 2.05
+
+-   **B Zero** - 14.837![](exercise 8.52)
 
 ``` R
 ##platyrrhines 
@@ -100,7 +139,13 @@ covplat <- cov(plat$ECV, plat$Group_size)
 (mplat <- lm(formula = ECV~Group_size, data = plat)) #double checking results - intercept is different but only due to rounding
 ```
 
-## 
+### Strepsirhines
+
+-   **B One -** 1.186
+
+-   **B Zero** - 9.359
+
+    ![](exercise 8.53)
 
 ``` R
 ##strepsirhines
@@ -117,6 +162,8 @@ covstreps <- cov(streps$ECV, streps$Group_size)
 (mstreps <- lm(formula = ECV~Group_size, data = streps)) #double checking results
 ```
 
+Comparing the slopes of each of these separate tests, I used `summary.aov()` to clarify the differences in significance between the coefficients. Using this method, the p-value of the platyrrhines B1 is highly significant; while strepsirhines B1 is only somewhat significant and the catarrhines B1 isn't significant at all. This means that the ECV is strongly correlated with Group size for platyrrhines, only somewhat for strepsirhines, and very little for catarrhines.
+
 ``` R
 summary.aov(mcat) #pvalue of 0.178
 summary.aov(mplat) #pvalue of 0.000752
@@ -125,6 +172,10 @@ summary.aov(mstreps) #pvalue of 0.051
 ```
 
 ## Step Six
+
+Returning to the analysis from step 3 and 4, I had to calculate by hand the **regression of sum squares**, **error of sum squares,** and the **sum of squared deviations for the x variable** to get the *mean variance by the regression* and the *mean remaining variance**.*** From those I derived the F ratio (25.129) and the standard error of the B1 (0.573).
+
+The critical value was derived from the `qf()` function (3.97) and the p-value was done with the `pf()` function (3.553-06). Finally, a `summary()` of the previous model was used to double-check my work.
 
 ``` R
 SSX <- sum((m1$model$Group_size - mean(m1$model$Group_size))^2) 
@@ -141,6 +192,10 @@ summary(m1)
 ```
 
 ## Step Seven
+
+To work with permutations I first loaded the `:broom:` and the `:mosaic:` packages in RStudio. Then I used a piped `broom::tidy()` and the `filter()` function to pull the slope from m1. I then set the number of permutations and ran the `do()` function that included creating a new version of the omitted dataset, sampling the Group_size column, producing a new model, and then repeating the process with `broom::tidy()` to get the new sampled slope. I then plotted the resulting distribution with the observed slope to visualize the difference. Along with a p-value comparing the actual slope to the permuted sample slopes generating a 0 p-value.
+
+![](exercise8.7.png)
 
 ``` R
 library(broom)
@@ -166,6 +221,14 @@ ggplot(data = perm) +
 ```
 
 ## Step Eight
+
+Finally, I loaded in the `:infer:` package and then created a bootstrapped slope by specifying ECV as a function of Group_size, generate 1000 reps, and then calculating slope for each. I then specified the upper and lower bounds of the p-value and the critical value. Following this, I summarized with the `summary()` function to produce the mean, standard error, upper and lower bounds of the confidence interval. Using this information I could generate CIs using the percentile method and the theory method and received differing results
+
+-   Percentile - **upper** 3.94 **lower** 1.22
+
+-   Theory - **upper** 4.11and **lower** 1.48
+
+    Both of these are not narrow enough to suggest the slope is significant in the bootstrapped distribution
 
 ``` R
 library(infer) #loading the important libraries
